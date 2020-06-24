@@ -84,6 +84,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	tokenString, _ := token.SignedString([]byte(*secret))
 	// Set cookie
 	tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires, HttpOnly: true, Secure: true}
+	if *dev {
+		tokenCookie.Secure = false
+	}
 	http.SetCookie(w, &tokenCookie)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	json.NewEncoder(w).Encode(ClientUser{result.Email, expires, result.FirstName, result.LastName})
@@ -91,5 +94,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func logout(w http.ResponseWriter, r *http.Request) {
 	// Set cookie
-	http.SetCookie(w, &http.Cookie{Name: "access_token", Value: "", Expires: time.Time{}, HttpOnly: true, Secure: true})
+	cookie := http.Cookie{Name: "access_token", Value: "", Expires: time.Time{}, HttpOnly: true, Secure: true}
+	if *dev {
+		cookie.Secure = false
+	}
+	http.SetCookie(w, &cookie)
 }

@@ -15,9 +15,10 @@ import (
 
 var addr = flag.String("addr", ":5000", "http service address")
 var pass = flag.String("pass", "", "db password")
-var mgPass = flag.String("mg", "", "db password")
+var mgPass = flag.String("mg", "", "mailgun api-key")
 var secret = flag.String("secret", "12345678", "JWT secret")
-var cors = flag.String("cors", "http://localhost:8080", "Allowed IP")
+var cors = flag.String("cors", "http://localhost:8080", "allowed IP")
+var dev = flag.Bool("dev", false, "development mode")
 var upgrader = websocket.Upgrader{CheckOrigin: func(r *http.Request) bool {
 	return true
 }} // use default options
@@ -64,7 +65,7 @@ func main() {
 	http.HandleFunc("/login", corsMiddleware(login))
 	http.HandleFunc("/logout", corsMiddleware(logout))
 	http.HandleFunc("/users", corsMiddleware(usersHandler))
-	http.HandleFunc("/validate", validateEmail)
+	http.HandleFunc("/validate", corsMiddleware(validateEmail))
 	log.Println("Server running on", *addr)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
