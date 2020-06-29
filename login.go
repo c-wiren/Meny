@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -35,7 +34,7 @@ type NewUser struct {
 
 // A PatchUser represents user data to change
 type PatchUser struct {
-	Email       string `json:"-" bson:"-" validate:"max=255,email"`
+	Email       string `json:"-" bson:"-" validate:"omitempty,max=255,email"`
 	FirstName   string `json:"firstName,omitempty" bson:"first_name,omitempty" validate:"max=255"`
 	LastName    string `json:"lastName,omitempty" bson:"last_name,omitempty" validate:"max=255"`
 	Password    string `json:"password,omitempty" bson:"-" validate:"max=255"`
@@ -69,8 +68,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password))
 	if err != nil {
 		// Incorrect password
-		log.Println("Error: Incorrect password")
-		w.WriteHeader(http.StatusUnauthorized)
+		http.Error(w, "Incorrect e-mail or password", http.StatusUnauthorized)
 		return
 	}
 	expires := time.Now().AddDate(0, 0, 30)

@@ -73,7 +73,6 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 			err := bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password))
 			if err != nil {
 				// Incorrect password
-				log.Println("Error: Incorrect password")
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -121,7 +120,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Invalid token
 			log.Println("Error: Invalid token")
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, "Invalid token", http.StatusBadRequest)
 			return
 		}
 		claims, ok := emailToken.Claims.(jwt.MapClaims)
@@ -129,7 +128,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		if !ok || !emailToken.Valid {
 			// Invalid token
 			log.Println("Error: Invalid token")
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
 		// Get data from JWT
