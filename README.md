@@ -10,3 +10,5 @@ It syncs data between all devices in realtime over websockets. Full functionalit
 
 Frontend: [https://github.com/chrwir/Meny-frontend](https://github.com/chrwir/Meny-frontend)
 
+![](https://meny.wiren.cc/screenshots.jpg)
+
