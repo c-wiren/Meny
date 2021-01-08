@@ -72,6 +72,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	expires := time.Now().AddDate(0, 0, 30)
+	expires2 := time.Now().AddDate(100, 0, 0)
 	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": result.Email,
@@ -81,7 +82,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	})
 	tokenString, _ := token.SignedString([]byte(*secret))
 	// Set cookie
-	tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires, HttpOnly: true, Secure: true}
+	tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires2, HttpOnly: true, Secure: true}
 	if *dev {
 		tokenCookie.Secure = false
 	}

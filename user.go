@@ -187,6 +187,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// Create JWT token
 		expires := time.Now().AddDate(0, 0, 30)
+		expires2 := time.Now().AddDate(100, 0, 0)
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"email": user.Email,
 			"home":  user.Home,
@@ -196,7 +197,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		tokenString, _ := token.SignedString([]byte(*secret))
 
 		// Set cookie
-		tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires, HttpOnly: true, Secure: true}
+		tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires2, HttpOnly: true, Secure: true}
 		http.SetCookie(w, &tokenCookie)
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		json.NewEncoder(w).Encode(ClientUser{user.Email, expires, user.FirstName, user.LastName})
