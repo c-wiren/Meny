@@ -265,7 +265,7 @@ func ws(w http.ResponseWriter, r *http.Request) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 
-	if !ok || !token.Valid {
+	if !ok /*|| !token.Valid */ {
 		// Invalid token
 		log.Println("Error: Invalid token")
 		http.Error(w, "Invalid token", http.StatusUnauthorized)
