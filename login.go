@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -74,6 +76,63 @@ func login(w http.ResponseWriter, r *http.Request) {
 	expires := time.Now().AddDate(0, 0, 30)
 	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": result.Email,
+		"home":  result.Home,
+		"exp":   expires,
+		"iat":   time.Now(),
+	})
+	tokenString, _ := token.SignedString([]byte(*secret))
+	// Set cookie
+	tokenCookie := http.Cookie{Name: "access_token", Value: tokenString, Expires: expires, HttpOnly: true, Secure: true}
+	if *dev {
+		tokenCookie.Secure = false
+	}
+	http.SetCookie(w, &tokenCookie)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	json.NewEncoder(w).Encode(ClientUser{result.Email, expires, result.FirstName, result.LastName})
+}
+
+func renew(w http.ResponseWriter, r *http.Request) {
+	// Get JWT
+	cookie, err := r.Cookie("access_token")
+	if err != nil {
+		log.Println("Error: No token")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	token, err := jwt.Parse(cookie.Value, func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(*secret), nil
+	})
+
+	if err != nil {
+		// Invalid token
+		log.Println("Error: Invalid token")
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+
+	if !ok || !token.Valid {
+		// Invalid token
+		log.Println("Error: Invalid token")
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	// Get email from JWT
+	email, _ := claims["email"].(string)
+
+	// Get user data from DB
+	var result User
+	users.FindOne(context.TODO(), bson.M{"email": email}).Decode(&result)
+
+	expires := time.Now().AddDate(0, 0, 30)
+
+	// Create JWT token
+	token = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": result.Email,
 		"home":  result.Home,
 		"exp":   expires,
